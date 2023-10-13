@@ -36,11 +36,6 @@ func main() {
 	ch := make(chan int, numWorkers/2)
 
 	ctx, cancel := context.WithCancel(context.Background())
-
-	signalChan := make(chan os.Signal, 1)
-	cleanupDone := make(chan bool)
-	signal.Notify(signalChan, os.Interrupt)
-
 	for i := 0; i < numWorkers; i++ {
 		go func(ctx context.Context, i int) {
 			for {
@@ -63,6 +58,11 @@ func main() {
 			}
 		}
 	}(ctx)
+
+	signalChan := make(chan os.Signal, 1)
+	cleanupDone := make(chan bool)
+	signal.Notify(signalChan, os.Interrupt)
+
 	go func() {
 		for range signalChan {
 			fmt.Println("\nReceived an interrupt, exiting")
